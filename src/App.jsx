@@ -5,7 +5,9 @@ import { useState } from 'react'
 import './styles/App.css'
 
 function App() {
-const [emails, setEmails] = useState(initialEmails)
+const [emails, setEmails] = useState(initialEmails);
+const [hideRead, setHideRead] = useState(false);
+const [unreadEmails, setUnreadEmails] = useState(() => {const unreadEmails = initialEmails.filter((email) => email.read === false); return unreadEmails});
 
   const toggleRead = (id) => {
     const updatedEmails = emails.map((email) => 
@@ -14,12 +16,24 @@ const [emails, setEmails] = useState(initialEmails)
     setEmails(updatedEmails);
   }
 
-  const toggleStarred = (id => {
+  const toggleStarred = (id) => {
     const updatedEmails = emails.map((email) => 
       email.id === id ? { ...email, starred: !email.starred } : email
     );
     setEmails(updatedEmails);
-  })
+  }
+
+  const toggleHideReadCheckbox = () => {
+    if (hideRead === true) {
+      const unreadEmails = getUnreadEmails();
+      setUnreadEmails(unreadEmails);
+    } 
+    setHideRead(!hideRead);
+  }
+
+  const getUnreadEmails = () => {
+    return emails.filter((email) => email.read === false);
+  } 
 
   return (
     <div className="app">
@@ -48,7 +62,7 @@ const [emails, setEmails] = useState(initialEmails)
               id="hide-read"
               type="checkbox"
               checked={false}
-              // onChange={() => {}}
+              onChange={toggleHideReadCheckbox}
             />
           </li>
           
@@ -56,7 +70,16 @@ const [emails, setEmails] = useState(initialEmails)
       </nav>
       <main className="emails">
         <ul>
-          {emails.map((email) => (
+          {hideRead === false ?
+          emails.map((email) => (
+            <EmailItem
+              key={email.id}
+              email={email}
+              toggleRead={() => toggleRead(email.id)}
+              toggleStarred={() => toggleStarred(email.id)}
+            />
+          )) : 
+          unreadEmails.map((email) => (
             <EmailItem
               key={email.id}
               email={email}
@@ -92,6 +115,8 @@ function EmailItem({ email, toggleRead, toggleStarred }) {
   </li>
   );
 }
+
+
 
 
 
