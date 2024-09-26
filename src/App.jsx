@@ -7,33 +7,31 @@ import './styles/App.css'
 function App() {
 const [emails, setEmails] = useState(initialEmails);
 const [hideRead, setHideRead] = useState(false);
-const [unreadEmails, setUnreadEmails] = useState(() => {const unreadEmails = initialEmails.filter((email) => email.read === false); return unreadEmails});
 
   const toggleRead = (id) => {
     const updatedEmails = emails.map((email) => 
+      /*
+      The spread operator copies all the properties from the email object, and overrides the read property.
+      Mutating the object directly is not recommended in React. It is better to keep the object immutable. 
+      By creating new objects with updated values, React can detect changes and re-render components easier.
+      */
+      
       email.id === id ? { ...email, read: !email.read } : email
     );
     setEmails(updatedEmails);
   }
 
   const toggleStarred = (id) => {
-    const updatedEmails = emails.map((email) => 
+    const updatedEmails = emails.map((email) =>
+      // See spread syntax explanation above  
       email.id === id ? { ...email, starred: !email.starred } : email
     );
     setEmails(updatedEmails);
   }
 
-  const toggleHideReadCheckbox = () => {
-    if (hideRead === true) {
-      const unreadEmails = getUnreadEmails();
-      setUnreadEmails(unreadEmails);
-    } 
-    setHideRead(!hideRead);
-  }
 
-  const getUnreadEmails = () => {
-    return emails.filter((email) => email.read === false);
-  } 
+  // Filters out the read emails if the hideRead state is set to true
+  const displayedEmails = hideRead ? emails.filter(email => !email.read) : emails
 
   return (
     <div className="app">
@@ -60,9 +58,10 @@ const [unreadEmails, setUnreadEmails] = useState(() => {const unreadEmails = ini
             <label htmlFor="hide-read">Hide read</label>
             <input
               id="hide-read"
+              className="select-checkbox"
               type="checkbox"
-              checked={false}
-              onChange={toggleHideReadCheckbox}
+              checked={hideRead}
+              onChange={() => setHideRead(!hideRead)}
             />
           </li>
           
@@ -70,19 +69,19 @@ const [unreadEmails, setUnreadEmails] = useState(() => {const unreadEmails = ini
       </nav>
       <main className="emails">
         <ul>
-          {hideRead === false ?
-          emails.map((email) => (
-            <EmailItem
+          {
+          /*
+          displayedEmails.map iterates over each email in the email array.
+          displayedEmails contains emails based on the status of the hideReadCheckbox
+          */
+          displayedEmails.map((email) => (
+            // Email Itemm returns a JSX element for each mail.
+            <EmailItem 
+              // The key prop helpt React identify which items have changed, are added, or removed.
               key={email.id}
+              // Passes the email object as a prop to the EmailItem component.
               email={email}
-              toggleRead={() => toggleRead(email.id)}
-              toggleStarred={() => toggleStarred(email.id)}
-            />
-          )) : 
-          unreadEmails.map((email) => (
-            <EmailItem
-              key={email.id}
-              email={email}
+              // Provides a function that calls toggleRead with the specific email.id when executed.
               toggleRead={() => toggleRead(email.id)}
               toggleStarred={() => toggleStarred(email.id)}
             />
